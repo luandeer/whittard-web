@@ -5,6 +5,7 @@ type SearchParams = Record<string, string | string[] | undefined>;
 const QUERY_KEYS = {
   sort: 'sort',
   search: 'search',
+  categoryIds: 'category_ids',
   flavorIds: 'flavor_ids',
   attributionIds: 'attribution_ids',
   attributeOptionIds: 'attribute_option_ids',
@@ -41,6 +42,7 @@ export function parseCatalogSearchParams(searchParams: SearchParams): CatalogQue
 
   return {
     search: firstValue(searchParams[QUERY_KEYS.search]),
+    categoryIds: toIdList(searchParams[QUERY_KEYS.categoryIds]),
     flavorIds: toIdList(searchParams[QUERY_KEYS.flavorIds]),
     attributionIds: toIdList(searchParams[QUERY_KEYS.attributionIds]),
     attributeOptionIds: toIdList(searchParams[QUERY_KEYS.attributeOptionIds]),
@@ -63,6 +65,7 @@ export function buildCatalogQueryString(params: CatalogQueryParams, includeCurso
 
   set(QUERY_KEYS.sort, params.sort);
   set(QUERY_KEYS.search, params.search);
+  set(QUERY_KEYS.categoryIds, params.categoryIds?.join(','));
   set(QUERY_KEYS.flavorIds, params.flavorIds?.join(','));
   set(QUERY_KEYS.attributionIds, params.attributionIds?.join(','));
   set(QUERY_KEYS.attributeOptionIds, params.attributeOptionIds?.join(','));
@@ -74,5 +77,3 @@ export function buildCatalogQueryString(params: CatalogQueryParams, includeCurso
   const query = searchParams.toString();
   return query ? `?${query}` : '';
 }
-
-export const CATALOG_QUERY_KEYS = QUERY_KEYS;

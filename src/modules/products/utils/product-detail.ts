@@ -188,14 +188,3 @@ export function buildInformationSections(product: ProductDetail): ProductInforma
 
   return sections;
 }
-
-/** Tarjetas relacionadas (similar + combinable) desde el detalle. */
-export function getRelatedCards(product: ProductDetail) {
-  const related = [...(product.similar_products ?? []), ...(product.combinable_products ?? [])];
-  const seen = new Set<string>();
-  return related.filter((card) => {
-    if (seen.has(card.id) || card.id === product.id) return false;
-    seen.add(card.id);
-    return true;
-  });
-}

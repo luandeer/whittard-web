@@ -21,6 +21,7 @@ function toQuery(
 ): Record<string, string | number | boolean | undefined> {
   return {
     'filter[category]': params.category,
+    'filter[category_ids]': params.categoryIds?.length ? params.categoryIds.join(',') : undefined,
     'filter[search]': params.search,
     'filter[sku]': params.sku,
     'filter[flavor_ids]': params.flavorIds?.length ? params.flavorIds.join(',') : undefined,
@@ -48,39 +49,32 @@ function withQuery(endpoint: string, params?: CatalogQueryParams): string {
 export class RemoteCatalogRepository implements CatalogRepository {
   constructor(private readonly http: CatalogHttpClient) {}
 
-  getProducts(
-    params?: CatalogQueryParams,
-    options?: CatalogRequestOptions,
-  ): Promise<CatalogResponse> {
-    const endpoint = withQuery(`${STORE_V1_BASE}/products`, params);
-    return this.http.get<CatalogResponse>(endpoint, options).then((response) => response.data);
+  private request<T>(endpoint: string, options?: CatalogRequestOptions): Promise<T> {
+    return this.http.get<T>(endpoint, options).then((response) => response.data);
   }
 
-  getFilters(options?: CatalogRequestOptions): Promise<CatalogFilters> {
-    return this.http
-      .get<CatalogFilters>(`${STORE_V1_BASE}/catalog/filters`, options)
-      .then((response) => response.data);
+  getProducts(params?: CatalogQueryParams, options?: CatalogRequestOptions) {
+    return this.request<CatalogResponse>(withQuery(`${STORE_V1_BASE}/products`, params), options);
   }
 
-  getCategoryByPath(path: string, options?: CatalogRequestOptions): Promise<CategoryPath> {
-    return this.http
-      .get<CategoryPath>(`${STORE_V1_BASE}/catalog/categories/by-path/${path}`, options)
-      .then((response) => response.data);
+  getFilters(options?: CatalogRequestOptions) {
+    return this.request<CatalogFilters>(`${STORE_V1_BASE}/catalog/filters`, options);
   }
 
-  getProductBySlug(
-    slug: string,
-    variant?: string,
-    options?: CatalogRequestOptions,
-  ): Promise<ProductDetail> {
+  getCategoryByPath(path: string, options?: CatalogRequestOptions) {
+    return this.request<CategoryPath>(
+      `${STORE_V1_BASE}/catalog/categories/by-path/${path}`,
+      options,
+    );
+  }
+
+  getProductBySlug(slug: string, variant?: string, options?: CatalogRequestOptions) {
     const query = variant ? buildQueryString({ variant }) : '';
     const endpoint = `${STORE_V1_BASE}/products/${slug}${query ? `?${query}` : ''}`;
-    return this.http.get<ProductDetail>(endpoint, options).then((response) => response.data);
+    return this.request<ProductDetail>(endpoint, options);
   }
 
-  getSitemap(options?: CatalogRequestOptions): Promise<Sitemap> {
-    return this.http
-      .get<Sitemap>(`${STORE_V1_BASE}/sitemap`, options)
-      .then((response) => response.data);
+  getSitemap(options?: CatalogRequestOptions) {
+    return this.request<Sitemap>(`${STORE_V1_BASE}/sitemap`, options);
   }
 }

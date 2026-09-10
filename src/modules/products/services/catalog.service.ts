@@ -2,7 +2,6 @@ import { ApiServer } from '@/lib/http/server/api-server';
 
 import { RemoteCatalogRepository } from '../repository/catalog.repository';
 import type {
-  CatalogHttpClient,
   CatalogQueryParams,
   CatalogRepository,
   CatalogRequestOptions,
@@ -27,9 +26,7 @@ const PUBLIC_OPTIONS: CatalogRequestOptions = {
   next: { revalidate: STORE_PUBLIC_REVALIDATE },
 };
 
-const serverRepository: CatalogRepository = new RemoteCatalogRepository(
-  ApiServer as unknown as CatalogHttpClient,
-);
+const serverRepository: CatalogRepository = new RemoteCatalogRepository(ApiServer);
 
 /** Servicio para Server Components (SSR/ISR). */
 export const CatalogService = {

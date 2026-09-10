@@ -1,5 +1,3 @@
-import type { ApiResponse } from '@/lib/types';
-
 /**
  * Tipos del catálogo público del backend.
  *
@@ -175,9 +173,3 @@ export interface Sitemap {
   categories: { slug: string }[];
   products: { slug: string; updated_at: string }[];
 }
-
-export type CatalogResponseEnvelope = ApiResponse<CatalogResponse>;
-export type FiltersEnvelope = ApiResponse<CatalogFilters>;
-export type CategoryPathEnvelope = ApiResponse<CategoryPath>;
-export type ProductDetailEnvelope = ApiResponse<ProductDetail>;
-export type SitemapEnvelope = ApiResponse<Sitemap>;

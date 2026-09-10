@@ -2,7 +2,7 @@
 
 import { useMounted } from '@/lib/hooks/useMounted';
 import { ProductCard } from '@/modules/products/components/ProductCard';
-import type { ProductCardData } from '@/modules/products/types/productCard';
+import type { ProductCard as CatalogProductCard } from '@/modules/products/types/catalog';
 import {
   Carousel,
   CarouselApi,
@@ -14,7 +14,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 interface ProductCarouselProps {
-  products: ProductCardData[];
+  products: CatalogProductCard[];
   title?: string;
 }
 
@@ -102,7 +102,7 @@ export function ProductCarousel({ products, title }: ProductCarouselProps) {
         <CarouselContent className="-ml-4 sm:-ml-6 lg:-ml-12">
           {products.map((product) => (
             <CarouselItem
-              key={product.productId}
+              key={product.id}
               className="basis-1/2 pl-4 sm:basis-1/3 sm:pl-6 md:basis-1/4 lg:basis-1/5 lg:pl-12"
             >
               <ProductCard product={product} />

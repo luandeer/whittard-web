@@ -7,13 +7,14 @@ import { toast } from 'sonner';
 
 import { cn, formatCurrency } from '@/lib/utils';
 import { useCart } from '@/modules/cart/hooks/useCart';
-import type { ProductCardData } from '@/modules/products/types/productCard';
+import { DEFAULT_PRODUCT_IMAGE } from '@/modules/products/constants';
+import type { ProductCard as CatalogProductCard } from '@/modules/products/types/catalog';
 import { AppImage } from '@/shared/components/custom-ui/app-image';
 import { useFavorites } from '../hooks/useFavorites';
 import { Stars } from './Stars';
 
 interface ProductCardProps {
-  product: ProductCardData;
+  product: CatalogProductCard;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
@@ -21,11 +22,32 @@ export function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart();
   const [hovered, setHovered] = useState(false);
 
-  const active = isFavorite(product.productId, product.variantId);
-  const hasPromo = product.promoPrice !== null;
-  const lowStock = product.stock > 0 && product.stock <= 5;
-  const isOutOfStock = product.stock === 0;
-  const imageSrc = hovered && product.hoverImage ? product.hoverImage : product.image;
+  const variant = product.default_variant;
+
+  // `default_variant` es la única fuente de precio, oferta, stock e imágenes.
+  const onSale =
+    variant.on_sale &&
+    variant.effective_price !== null &&
+    variant.price !== null &&
+    variant.effective_price < variant.price;
+
+  const effective = variant.effective_price ?? variant.price ?? 0;
+  const regular = variant.price ?? effective;
+
+  const active = isFavorite(product.id, variant.id);
+  const lowStock = variant.available_stock > 0 && variant.available_stock <= 5;
+  const isOutOfStock = variant.available_stock === 0;
+  const image =
+    hovered && variant.hover_image_url
+      ? variant.hover_image_url
+      : (variant.image_url ?? DEFAULT_PRODUCT_IMAGE);
+
+  const badges = (Array.isArray(product.attributions) ? product.attributions : []).map(
+    (attribution) => ({
+      label: attribution.name,
+      imageUrl: attribution.image_url,
+    }),
+  );
 
   return (
     <article
@@ -37,7 +59,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <Link href={`/producto/${product.slug}`} className="block">
           <div className="border-brand-primary/50 relative aspect-square w-full overflow-hidden rounded-xs border">
             <AppImage
-              src={imageSrc}
+              src={image}
               alt={product.name}
               fill
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
@@ -57,12 +79,12 @@ export function ProductCard({ product }: ProductCardProps) {
           onClick={() => {
             const wasFavorite = active;
             const item = {
-              productId: product.productId,
-              variantId: product.variantId,
+              productId: product.id,
+              variantId: variant.id,
               slug: product.slug,
               name: product.name,
-              price: product.promoPrice ?? product.price,
-              image: product.image,
+              price: effective,
+              image: variant.image_url ?? DEFAULT_PRODUCT_IMAGE,
             };
             toast.promise(toggleAsync(item), {
               loading: wasFavorite ? 'Eliminando de favoritos...' : 'Guardando en favoritos...',
@@ -101,25 +123,23 @@ export function ProductCard({ product }: ProductCardProps) {
         </Link>
 
         <div className="flex items-center gap-2">
-          {hasPromo ? (
+          {onSale ? (
             <>
               <span className="text-brand-primary text-sm font-bold">
-                {formatCurrency(product.promoPrice!)}
+                {formatCurrency(effective)}
               </span>
-              <span className="text-xs text-gray-400 line-through">
-                {formatCurrency(product.price)}
-              </span>
+              <span className="text-xs text-gray-400 line-through">{formatCurrency(regular)}</span>
             </>
           ) : (
-            <span className="text-sm font-bold text-gray-900">{formatCurrency(product.price)}</span>
+            <span className="text-sm font-bold text-gray-900">{formatCurrency(effective)}</span>
           )}
         </div>
 
-        <Stars rating={product.rating} />
+        <Stars rating={product.rating?.avg ?? 0} />
 
-        {product.badges && product.badges.length > 0 && (
+        {badges.length > 0 && (
           <div className="flex items-center gap-1.5">
-            {product.badges.map((badge) =>
+            {badges.map((badge) =>
               badge.imageUrl ? (
                 <AppImage
                   key={badge.label}
@@ -144,7 +164,9 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
 
         {lowStock && (
-          <span className="text-xs font-medium text-orange-600">¡Solo quedan {product.stock}!</span>
+          <span className="text-xs font-medium text-orange-600">
+            ¡Solo quedan {variant.available_stock}!
+          </span>
         )}
 
         {isOutOfStock && <span className="text-xs font-medium text-red-600">Agotado</span>}
@@ -155,16 +177,16 @@ export function ProductCard({ product }: ProductCardProps) {
           type="button"
           onClick={() => {
             addItem({
-              productId: product.productId,
-              variantId: product.variantId,
-              sku: product.variantId,
+              productId: product.id,
+              variantId: variant.id,
+              sku: variant.sku,
               name: product.name,
               slug: product.slug,
-              image: product.image,
-              unitPrice: product.price,
-              promoPrice: product.promoPrice,
-              stock: product.stock,
-              maxQuantity: product.stock,
+              image: variant.image_url ?? DEFAULT_PRODUCT_IMAGE,
+              unitPrice: onSale ? regular : effective,
+              promoPrice: onSale ? effective : null,
+              stock: variant.available_stock,
+              maxQuantity: variant.available_stock,
             });
             toast.success(`${product.name} agregado al carrito`);
           }}

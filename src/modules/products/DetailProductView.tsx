@@ -1,6 +1,5 @@
-import { toProductCardDataList } from '@/modules/products/mappers/product-card.mapper';
 import type { ProductDetail } from '@/modules/products/types/catalog';
-import { getRelatedCards } from '@/modules/products/utils/product-detail';
+import { ReviewsSection } from '@/modules/reviews/components/ReviewsSection';
 import { Container } from '@/shared/components/custom-ui/Container';
 import { PageBreadcrumb } from '@/shared/components/custom-ui/PageBreadcrumb';
 import { ProductHero } from './components/hero/ProductHero';
@@ -11,7 +10,7 @@ interface DetailProductViewProps {
 }
 
 export function DetailProductView({ product }: DetailProductViewProps) {
-  const relatedProducts = toProductCardDataList(getRelatedCards(product));
+  const similarProducts = (product.similar_products ?? []).filter((card) => card.id !== product.id);
   const parent = product.category?.parent;
 
   const categoryPath = [parent?.slug, product.category?.slug].filter(Boolean).join('/');
@@ -29,10 +28,16 @@ export function DetailProductView({ product }: DetailProductViewProps) {
     <Container as="main" className="py-6 md:py-10">
       <PageBreadcrumb items={breadcrumbItems} className="mb-6" />
 
-      <ProductHero product={product} />
+      <ProductHero key={product.id} product={product} />
 
-      {relatedProducts.length > 0 && (
-        <ProductCarousel products={relatedProducts} title="También te puede gustar" />
+      <ReviewsSection
+        productId={product.id}
+        productSlug={product.slug}
+        className="border-brand-primary/15 my-16 border-t pt-10 md:my-20 md:pt-12"
+      />
+
+      {similarProducts.length > 0 && (
+        <ProductCarousel products={similarProducts} title="También te puede gustar" />
       )}
     </Container>
   );

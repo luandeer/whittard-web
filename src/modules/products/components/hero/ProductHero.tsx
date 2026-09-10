@@ -9,6 +9,7 @@ import {
   resolveValidSelection,
   toProductMedia,
 } from '@/modules/products/utils/product-detail';
+import { BuyTogetherSection } from '../buy-together/BuyTogetherSection';
 import { ProductGallery } from './ProductGallery';
 import { ProductInfo } from './ProductInfo';
 
@@ -23,6 +24,7 @@ export function ProductHero({ product }: ProductHeroProps) {
   const [selectedValues, setSelectedValues] = useState<Record<string, string>>(() =>
     resolveValidSelection(variants, groups, {}),
   );
+  const [quantity, setQuantity] = useState(1);
 
   const selectedVariant = useMemo(
     () => findVariantForSelection(variants, selectedValues) ?? variants[0] ?? null,
@@ -31,22 +33,48 @@ export function ProductHero({ product }: ProductHeroProps) {
 
   const media = useMemo(() => toProductMedia(product, selectedVariant), [product, selectedVariant]);
 
+  const combinables = useMemo(
+    () => (product.combinable_products ?? []).filter((card) => card.id !== product.id),
+    [product.combinable_products, product.id],
+  );
+
+  // Si cambia la variante, ajusta la cantidad al stock disponible de la nueva.
   const handleOptionChange = (groupId: string, optionId: string) => {
-    setSelectedValues((prev) =>
-      resolveValidSelection(variants, groups, { ...prev, [groupId]: optionId }),
-    );
+    const nextValues = resolveValidSelection(variants, groups, {
+      ...selectedValues,
+      [groupId]: optionId,
+    });
+    setSelectedValues(nextValues);
+
+    const nextVariant = findVariantForSelection(variants, nextValues) ?? variants[0] ?? null;
+    if (nextVariant) {
+      setQuantity((current) => Math.min(current, Math.max(1, nextVariant.available_stock ?? 1)));
+    }
   };
 
   return (
-    <div className="mb-20 grid gap-8 md:grid-cols-2 md:gap-12">
-      <ProductGallery images={media} />
-      <ProductInfo
-        product={product}
-        groups={groups}
-        selectedValues={selectedValues}
-        selectedVariant={selectedVariant}
-        onOptionChange={handleOptionChange}
-      />
-    </div>
+    <>
+      <div className="mb-16 grid gap-8 md:mb-20 md:grid-cols-2 md:gap-12">
+        <ProductGallery images={media} />
+        <ProductInfo
+          product={product}
+          groups={groups}
+          selectedValues={selectedValues}
+          selectedVariant={selectedVariant}
+          quantity={quantity}
+          onOptionChange={handleOptionChange}
+          onQuantityChange={setQuantity}
+        />
+      </div>
+
+      {selectedVariant && combinables.length > 0 && (
+        <BuyTogetherSection
+          product={product}
+          selectedVariant={selectedVariant}
+          quantity={quantity}
+          className="mb-16 md:mb-20"
+        />
+      )}
+    </>
   );
 }

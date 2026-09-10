@@ -1,14 +1,16 @@
-import { MenuIcon } from 'lucide-react';
-
+import { MobileNavigation } from '@/modules/category-navigation/mobile/MobileNavigation';
+import type { MegaMenuRoot } from '@/modules/category-navigation/types/megamenu.types';
 import { Container } from '@/shared/components/custom-ui/Container';
-import { Button } from '@/shared/components/shadcn-ui/button';
-import { SheetTrigger } from '@/shared/components/shadcn-ui/sheet';
 
 import { Logo } from './Logo';
 import { Search } from './search/Search';
 import { UtilityNavigation } from './UtilityNavigation/UtilityNavigation';
 
-export default function MainHeader() {
+interface MainHeaderProps {
+  categories: MegaMenuRoot[];
+}
+
+export default function MainHeader({ categories }: MainHeaderProps) {
   return (
     <Container
       as="div"
@@ -16,16 +18,7 @@ export default function MainHeader() {
       className="flex h-20 items-center justify-between gap-4 lg:gap-8"
     >
       <div className="flex items-center gap-2 lg:max-w-xs">
-        <SheetTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-brand-white hover:bg-transparent hover:text-white lg:hidden"
-            aria-label="Abrir menú de navegación"
-          >
-            <MenuIcon strokeWidth={1.5} className="size-6" />
-          </Button>
-        </SheetTrigger>
+        <MobileNavigation categories={categories} />
         <div className="hidden flex-1 lg:block">
           <Search />
         </div>

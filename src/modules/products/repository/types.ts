@@ -4,7 +4,6 @@ import type {
   CatalogFilters,
   CatalogResponse,
   CategoryPath,
-  ProductCard,
   ProductDetail,
   Sitemap,
 } from '../types/catalog';
@@ -12,6 +11,8 @@ import type {
 export interface CatalogQueryParams {
   /** Ruta completa de categoría (ej: `tea/black-tea`). Incluye descendientes. */
   category?: string;
+  /** IDs de categorías seleccionadas — `filter[category_ids]` CSV con OR. Incluye descendientes. */
+  categoryIds?: string[];
   /** LIKE sobre name, slug y brand. */
   search?: string;
   /** LIKE sobre variants.sku. */
@@ -40,6 +41,8 @@ export type CatalogRequestOptions = {
   auth?: boolean | 'optional';
   cache?: RequestCache;
   next?: NextFetchRequestConfig;
+  /** Cabeceras extra; compartido por ApiServer y ApiClient (evita el cast en el repo). */
+  headers?: Record<string, string>;
 };
 
 export interface CatalogHttpClient {
@@ -60,5 +63,3 @@ export interface CatalogRepository {
   ): Promise<ProductDetail>;
   getSitemap(options?: CatalogRequestOptions): Promise<Sitemap>;
 }
-
-export type { CatalogFilters, CatalogResponse, ProductCard, ProductDetail };

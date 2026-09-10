@@ -78,22 +78,29 @@ Sí usa el envelope (lo responde el controller).
 
 ### 3.1 Query params
 
-| Param                          | Tipo             | Comportamiento                                                                                        |
-| ------------------------------ | ---------------- | ----------------------------------------------------------------------------------------------------- |
-| `filter[category]`             | string           | Slug **o ruta** `padre/hijo`. Incluye descendientes. Ruta inexistente → **404**                       |
-| `filter[search]`               | string           | LIKE sobre `name`, `slug`, `brand` (NO busca por `code`)                                              |
-| `filter[sku]`                  | string           | LIKE sobre `variants.sku`. La variante que matchea se convierte en el `default_variant` de la tarjeta |
-| `filter[flavor_ids]`           | csv              | Productos con **al menos uno** de los sabores (OR)                                                    |
-| `filter[attribution_ids]`      | csv              | Productos con **al menos uno** de los sellos (OR)                                                     |
-| `filter[attribute_option_ids]` | csv              | Productos con una variante activa cuyo `attributes` contenga **todos** esos valores (AND)             |
-| `filter[price_min]`            | number           | Precio **efectivo** ≥ valor                                                                           |
-| `filter[price_max]`            | number           | Precio **efectivo** ≤ valor                                                                           |
-| `filter[in_stock]`             | `true/false/1/0` | `true` → solo productos con stock disponible (`stock - reserved_qty > 0`)                             |
-| `sort`                         | string           | `name`, `price` (efectivo min), `rating`, `created_at`; prefijo `-` = desc. Default `-created_at`     |
-| `per_page`                     | int              | Default `24`. Se **cap a 48** (valores mayores devuelven 48; `< 1` → 422)                             |
-| `cursor`                       | string           | Cursor opaco para scroll infinito (ver §3.3). `null`/ausente → primera página                         |
+| Param                          | Tipo               | Comportamiento                                                                                                                                                                           |
+| ------------------------------ | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `filter[category]`             | string             | Slug **o ruta** `padre/hijo`. Incluye descendientes. Ruta inexistente → **404**                                                                                                          |
+| `filter[category_ids]`         | UUID / CSV / array | Filtra por **categorías** por ID (uno o varios). Acepta CSV (`A,B`) o array (`[]=A&[]=B`) con **OR**; cada ID incluye sus descendientes (unión sin duplicados). ID inexistente → **404** |
+| `filter[search]`               | string             | LIKE sobre `name`, `slug`, `brand` (NO busca por `code`)                                                                                                                                 |
+| `filter[sku]`                  | string             | LIKE sobre `variants.sku`. La variante que matchea se convierte en el `default_variant` de la tarjeta                                                                                    |
+| `filter[flavor_ids]`           | csv                | Productos con **al menos uno** de los sabores (OR)                                                                                                                                       |
+| `filter[attribution_ids]`      | csv                | Productos con **al menos uno** de los sellos (OR)                                                                                                                                        |
+| `filter[attribute_option_ids]` | csv                | Productos con una variante activa cuyo `attributes` contenga **todos** esos valores (AND)                                                                                                |
+| `filter[price_min]`            | number             | Precio **efectivo** ≥ valor                                                                                                                                                              |
+| `filter[price_max]`            | number             | Precio **efectivo** ≤ valor                                                                                                                                                              |
+| `filter[in_stock]`             | `true/false/1/0`   | `true` → solo productos con stock disponible (`stock - reserved_qty > 0`)                                                                                                                |
+| `sort`                         | string             | `name`, `price` (efectivo min), `rating`, `created_at`; prefijo `-` = desc. Default `-created_at`                                                                                        |
+| `per_page`                     | int                | Default `24`. Se **cap a 48** (valores mayores devuelven 48; `< 1` → 422)                                                                                                                |
+| `cursor`                       | string             | Cursor opaco para scroll infinito (ver §3.3). `null`/ausente → primera página                                                                                                            |
 
-> Combinaciones de filtros: **AND entre dimensiones**, **OR dentro** de `flavor_ids`/`attribution_ids`.
+> Combinaciones de filtros: **AND entre dimensiones**, **OR dentro** de `flavor_ids`/`attribution_ids`/`category_ids`.
+>
+> **Filtro estándar de categorías:** envía **todos** los IDs que hayas seleccionado
+> (raíces y subcategorías) en **un solo** `filter[category_ids]` con OR:
+> `filter[category_ids]=A,B,C` (o array). Como cada ID incluye sus descendientes,
+> el resultado es la unión sin duplicados (mandar una raíz y su sub es redundante
+> pero inofensivo). `filter[category]` queda para rutas legibles (drill-down).
 
 ### 3.2 Respuesta (200)
 

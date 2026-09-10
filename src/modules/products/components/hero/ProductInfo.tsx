@@ -2,7 +2,6 @@
 
 import { formatCurrency } from '@/lib/utils';
 import { useCart } from '@/modules/cart/hooks/useCart';
-import { ProductRating } from '@/modules/products/components/ProductRating';
 import { Stars } from '@/modules/products/components/Stars';
 import { DEFAULT_PRODUCT_IMAGE } from '@/modules/products/constants';
 import type { ProductDetail, Variant } from '@/modules/products/types/catalog';
@@ -11,7 +10,7 @@ import { buildInformationSections } from '@/modules/products/utils/product-detai
 import { Badge } from '@/shared/components/shadcn-ui/badge';
 import { Button } from '@/shared/components/shadcn-ui/button';
 import { AlertTriangle } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useCallback } from 'react';
 import { toast } from 'sonner';
 import { FavoriteButton } from './FavoriteButton';
 import { ProductAttributeBadges } from './ProductAttributeBadges';
@@ -25,7 +24,9 @@ interface ProductInfoProps {
   groups: VariantGroup[];
   selectedValues: Record<string, string>;
   selectedVariant: Variant | null;
+  quantity: number;
   onOptionChange: (groupId: string, optionId: string) => void;
+  onQuantityChange: (quantity: number) => void;
 }
 
 export function ProductInfo({
@@ -33,13 +34,12 @@ export function ProductInfo({
   groups,
   selectedValues,
   selectedVariant,
+  quantity,
   onOptionChange,
+  onQuantityChange,
 }: ProductInfoProps) {
   const { addItem } = useCart();
   const hasVariants = groups.length > 0;
-
-  const [quantity, setQuantity] = useState(1);
-  const [userRating, setUserRating] = useState(0);
 
   const effectivePrice = selectedVariant?.effective_price ?? selectedVariant?.price ?? 0;
   const regularPrice = selectedVariant?.price ?? effectivePrice;
@@ -121,10 +121,17 @@ export function ProductInfo({
         </div>
 
         {product.rating.count > 0 && (
-          <div className="flex items-center gap-1.5 border-l border-gray-200 pl-3">
+          <a
+            href="#reviews"
+            aria-label={`Ver reseñas del producto (${product.rating.count})`}
+            title="Ver reseñas y escribir tu opinión"
+            className="flex cursor-pointer items-center gap-1.5 border-l border-gray-200 pl-3 transition-opacity hover:opacity-80"
+          >
             <Stars rating={product.rating.avg} />
-            <span className="text-xs text-gray-500">({product.rating.count})</span>
-          </div>
+            <span className="text-xs text-gray-500 underline-offset-4 hover:underline">
+              ({product.rating.count})
+            </span>
+          </a>
         )}
       </div>
 
@@ -143,7 +150,7 @@ export function ProductInfo({
           <QuantitySelector
             quantity={quantity}
             max={Math.max(1, maxStock)}
-            onChange={setQuantity}
+            onChange={onQuantityChange}
           />
           <Button
             size="lg"
@@ -161,16 +168,6 @@ export function ProductInfo({
             ¡Solo quedan {maxStock} unidades!
           </p>
         )}
-      </div>
-
-      <div className="flex flex-col items-start gap-2">
-        <span className="flex items-center gap-1 text-sm leading-snug font-medium tracking-wide text-amber-600">
-          Califica este producto:
-        </span>
-        <div className="flex items-center gap-3">
-          <ProductRating value={userRating} onChange={setUserRating} size="md" />
-          {userRating > 0 && <span className="text-brand-secondary text-xs">({userRating}/5)</span>}
-        </div>
       </div>
 
       {product.descriptions?.short && (

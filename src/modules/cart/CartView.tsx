@@ -2,7 +2,7 @@
 
 import { formatCurrency } from '@/lib/utils';
 import { ProductCarousel } from '@/modules/products/components/product-carousel/ProductCarousel';
-import type { ProductCardData } from '@/modules/products/types/productCard';
+import type { ProductCard } from '@/modules/products/types/catalog';
 import { Container } from '@/shared/components/custom-ui/Container';
 import { PageBreadcrumb } from '@/shared/components/custom-ui/PageBreadcrumb';
 import { useState } from 'react';
@@ -13,51 +13,47 @@ import { useCart } from './hooks/useCart';
 
 const CART_BREADCRUMBS = [{ label: 'Inicio', href: '/' }, { label: 'Carrito' }];
 
-const RELATED_PRODUCTS: ProductCardData[] = [
-  {
-    productId: '1',
-    variantId: '1a',
-    slug: 'covent-garden-blend',
-    name: 'Covent Garden Blend Loose Tea',
-    price: 12.98,
-    promoPrice: null,
-    stock: 18,
-    image: '/producto1.png',
-    rating: 4.8,
-  },
-  {
-    productId: '2',
-    variantId: '2a',
-    slug: 'english-breakfast',
-    name: 'English Breakfast Loose Tea',
-    price: 12.98,
-    promoPrice: null,
-    stock: 14,
-    image: '/producto1.png',
-    rating: 4.7,
-  },
-  {
-    productId: '3',
-    variantId: '3a',
-    slug: 'earl-grey-classic',
-    name: 'Earl Grey Classic Loose Tea',
-    price: 12.98,
-    promoPrice: null,
-    stock: 6,
-    image: '/producto1.png',
-    rating: 4.9,
-  },
-  {
-    productId: '4',
-    variantId: '4a',
-    slug: 'jasmine-green-tea',
-    name: 'Jasmine Green Tea Loose Tea',
-    price: 12.98,
-    promoPrice: null,
-    stock: 20,
-    image: '/producto1.png',
-    rating: 4.6,
-  },
+function card(
+  id: string,
+  name: string,
+  slug: string,
+  price: number,
+  promoPrice: number | null,
+  stock: number,
+  rating: number,
+): ProductCard {
+  return {
+    id,
+    name,
+    slug,
+    brand: null,
+    category: null,
+    default_variant: {
+      id: `${id}a`,
+      sku: `SKU-${id}`,
+      price,
+      effective_price: promoPrice ?? price,
+      sale_price: promoPrice,
+      sale_price_starts_at: null,
+      sale_price_ends_at: null,
+      on_sale: promoPrice !== null,
+      available_stock: stock,
+      in_stock: stock > 0,
+      attributes: {},
+      image_url: '/producto1.png',
+      hover_image_url: null,
+    },
+    rating: { avg: rating, count: 0 },
+    flavors: [],
+    attributions: [],
+  };
+}
+
+const RELATED_PRODUCTS: ProductCard[] = [
+  card('1', 'Covent Garden Blend Loose Tea', 'covent-garden-blend', 12.98, null, 18, 4.8),
+  card('2', 'English Breakfast Loose Tea', 'english-breakfast', 12.98, null, 14, 4.7),
+  card('3', 'Earl Grey Classic Loose Tea', 'earl-grey-classic', 12.98, null, 6, 4.9),
+  card('4', 'Jasmine Green Tea Loose Tea', 'jasmine-green-tea', 12.98, null, 20, 4.6),
 ];
 
 export function CartView() {

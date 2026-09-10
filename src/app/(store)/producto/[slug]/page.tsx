@@ -47,6 +47,7 @@ export default async function ProductPage({ params, searchParams }: PageProps) {
   let product;
   try {
     product = await CatalogService.getProductBySlug(slug, variant);
+    console.log('producto:', product);
   } catch (error) {
     if (isNotFoundError(error)) notFound();
     throw error;

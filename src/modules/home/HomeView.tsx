@@ -1,5 +1,5 @@
 import { ProductCarousel } from '@/modules/products/components/product-carousel/ProductCarousel';
-import type { ProductCardData } from '@/modules/products/types/productCard';
+import type { ProductCard } from '@/modules/products/types/catalog';
 import { RecipeCarousel } from '@/modules/recipes/components/recipe-carousel/RecipeCarousel';
 import { MOCK_RECIPES } from '@/modules/recipes/mocks/recipes.mock';
 import { Container } from '@/shared/components/custom-ui/Container';
@@ -72,73 +72,50 @@ const SUMMER_FAVORITES = {
   description:
     'From calming infusions and refreshing instant teas to indulgent hot chocolates and buttery biscuits, expect bright tartness, soft florals, and a touch of nostalgic sweetness.',
 };
-const PRODUCTS: ProductCardData[] = [
-  {
-    productId: '1',
-    variantId: '1a',
-    slug: 'earl-grey-classic',
-    name: 'Earl Grey Classic',
-    price: 45.0,
-    promoPrice: 35.0,
-    stock: 12,
-    image: '/producto1.png',
-    rating: 0,
-  },
-  {
-    productId: '2',
-    variantId: '2a',
-    slug: 'english-breakfast',
-    name: 'English Breakfast',
-    price: 42.0,
-    promoPrice: null,
-    stock: 8,
-    image: '/producto1.png',
-    rating: 4.6,
-  },
-  {
-    productId: '3',
-    variantId: '3a',
-    slug: 'jasmine-green-tea',
-    name: 'Jasmine Green Tea',
-    price: 48.0,
-    promoPrice: 38.0,
-    stock: 3,
-    image: '/producto1.png',
-    rating: 4.9,
-  },
-  {
-    productId: '4',
-    variantId: '4a',
-    slug: 'chamomile-honey',
-    name: 'Manzanilla & Miel',
-    price: 38.0,
-    promoPrice: null,
-    stock: 20,
-    image: '/producto1.png',
-    rating: 4.5,
-  },
-  {
-    productId: '5',
-    variantId: '5a',
-    slug: 'matcha-premium',
-    name: 'Matcha Premium Ceremonial',
-    price: 65.0,
-    promoPrice: 55.0,
-    stock: 5,
-    image: '/producto1.png',
-    rating: 4.7,
-  },
-  {
-    productId: '6',
-    variantId: '6a',
-    slug: 'hot-chocolate-deluxe',
-    name: 'Chocolate Caliente Deluxe',
-    price: 52.0,
-    promoPrice: null,
-    stock: 0,
-    image: '/producto1.png',
-    rating: 4.4,
-  },
+
+function card(
+  id: string,
+  name: string,
+  slug: string,
+  price: number,
+  promoPrice: number | null,
+  stock: number,
+  rating: number,
+): ProductCard {
+  return {
+    id,
+    name,
+    slug,
+    brand: null,
+    category: null,
+    default_variant: {
+      id: `${id}a`,
+      sku: `SKU-${id}`,
+      price,
+      effective_price: promoPrice ?? price,
+      sale_price: promoPrice,
+      sale_price_starts_at: null,
+      sale_price_ends_at: null,
+      on_sale: promoPrice !== null,
+      available_stock: stock,
+      in_stock: stock > 0,
+      attributes: {},
+      image_url: '/producto1.png',
+      hover_image_url: null,
+    },
+    rating: { avg: rating, count: 0 },
+    flavors: [],
+    attributions: [],
+  };
+}
+
+const PRODUCTS: ProductCard[] = [
+  card('1', 'Earl Grey Classic', 'earl-grey-classic', 45.0, 35.0, 12, 0),
+  card('2', 'English Breakfast', 'english-breakfast', 42.0, null, 8, 4.6),
+  card('3', 'Jasmine Green Tea', 'jasmine-green-tea', 48.0, 38.0, 3, 4.9),
+  card('4', 'Manzanilla & Miel', 'chamomile-honey', 38.0, null, 20, 4.5),
+  card('5', 'Matcha Premium Ceremonial', 'matcha-premium', 65.0, 55.0, 5, 4.7),
+  card('6', 'Chocolate Caliente Deluxe', 'hot-chocolate-deluxe', 52.0, null, 0, 4.4),
 ];
 
 export default function HomeView() {

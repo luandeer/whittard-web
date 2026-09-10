@@ -1,6 +1,5 @@
 import { buildSeoMetadata } from '@/lib/seo';
 import { SeoJsonLd } from '@/lib/seo-json-ld';
-import { toProductCardDataList } from '@/modules/products/mappers/product-card.mapper';
 import { ProductsCatalogView } from '@/modules/products/ProductsCatalogView';
 import { CatalogService } from '@/modules/products/services/catalog.service';
 import type { CategoryPath } from '@/modules/products/types/catalog';
@@ -23,7 +22,6 @@ export async function generateMetadata({
 
   try {
     const category = await CatalogService.getCategoryByPath(slug.join('/'));
-    console.log('categorias:', category);
     return buildSeoMetadata({
       seo: category.seo,
       defaults: { title: category.category.name },
@@ -48,22 +46,19 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
       throw error;
     }
   }
+  console.log('categoria:', category);
 
   const productsParams = {
     ...parseCatalogSearchParams(query),
     ...(slug.length > 0 ? { category: slug.join('/') } : {}),
   };
 
-  const [productsResult, filtersResult] = await Promise.allSettled([
+  const [productsResponse, filters] = await Promise.all([
     CatalogService.getProducts(productsParams),
     CatalogService.getFilters(),
   ]);
 
-  if (productsResult.status === 'rejected') throw productsResult.reason;
-  if (filtersResult.status === 'rejected') throw filtersResult.reason;
-
-  const productsResponse = productsResult.value;
-  const filters = filtersResult.value;
+  console.log('product:', productsResponse);
 
   // Cada cambio de filtros cambia el query string: el `key` remonta la vista
   // (reset de estado local: página 1, inputs de precio, scroll infinito).
@@ -78,7 +73,7 @@ export default async function CatalogPage({ params, searchParams }: CatalogPageP
         key={viewKey}
         slug={slug}
         category={category}
-        products={toProductCardDataList(productsResponse.items)}
+        products={productsResponse.items}
         pagination={productsResponse.pagination}
         filters={filters}
       />
